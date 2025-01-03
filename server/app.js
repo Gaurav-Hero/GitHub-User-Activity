@@ -1,36 +1,58 @@
-import https from 'https'
+import express from 'express';
+import dotenv from 'dotenv';
 
-const options = {
-    hostname : 'api.github.com',
-    path : '/users/Gaurav-Hero/events',
-    method : 'GET',
-    headers : {
-        'User-Agent' : 'Node.js'
-    }
-}
 
-let data = '';
+const app = express();
 
-const req = https.request(options ,(res) => {
+dotenv.config();
+
+app.get('/' , (req , res ) => {
+    res.send("Hello world On //Route");
+})
+
+
+app.listen(process.env.PORT , () => {
+    console.log(`Server is Running @ http://localhost:${process.env.PORT} `);
+})
+
+
+
+
+
+
+// import https from 'https'
+
+// const options = {
+//     hostname : 'api.github.com',
+//     path : '/users/Gaurav-Hero/events',
+//     method : 'GET',
+//     headers : {
+//         'User-Agent' : 'Node.js'
+//     }
+// }
+
+// let data = '';
+
+// const req = https.request(options ,(res) => {
     
-    res.on('data' , (chunks) => {
-        data += chunks;
-    })
+//     res.on('data' , (chunks) => {
+//         data += chunks;
+//     })
 
-    res.on('end' , () => {
-        data = JSON.parse(data);
+//     res.on('end' , () => {
+//         data = JSON.parse(data);
         
-        displayRepos(data)
-        // console.log('data Received Successfully : ', data[0].repo.name)
-    })
+//         displayRepos(data)
+//         // console.log('data Received Successfully : ', data[0].repo.name)
+//     })
 
-})
+// })
 
-req.on('error' , (err) => {
-    console.error("Some error found -> ", err);
-})
+// req.on('error' , (err) => {
+//     console.error("Some error found -> ", err);
+// })
 
-req.end()
+// req.end()
 
 
 // const displayRepos = (data) => {
