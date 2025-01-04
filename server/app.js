@@ -1,85 +1,92 @@
 import express from 'express';
+import https from 'https'; // For making HTTPS requests
 import dotenv from 'dotenv';
 
+dotenv.config(); // Load environment variables
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-dotenv.config();
+app.use(express.json());
 
-app.get('/' , (req , res ) => {
-    res.send("Hello world On //Route");
+app.get('/', (req, res) => {
+    res.send('GitHub Info App is running!');
+});
+
+app.get('/user/:username', (req, res) => {
+    const username = req.params.username;
+
+    const options = {
+        hostname: 'api.github.com',
+        path: `/users/${username}`,
+        method: 'GET',
+        headers: {
+            'User-Agent': 'GitHub-Info-App', // Required by GitHub API
+            'Authorization': `token ${process.env.GITHUB_TOKEN}` // Optional: Use token to avoid rate limits
+        }
+    };
+
+    const request = https.request(options, (response) => {
+        let data = '';
+
+        response.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        response.on('end', () => {
+            if (response.statusCode === 200) {
+                res.json(JSON.parse(data));
+            } else {
+                res.status(response.statusCode).json({ error: 'User not found' });
+            }
+        });
+    });
+
+    request.on('error', (error) => {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    });
+
+    request.end();
+});
+
+app.get('/repos/:username' , (req, res) => {
+    const username = req.params.username;
+
+    const options = {
+        hostname: 'api.github.com',
+        path:`/users/${username}/repos`,
+        method: 'GET',
+        headers: {
+            'User-Agent': 'GitHub-Info-App',
+            'Authorization': `token ${process.env.GITHUB_TOKEN}`
+        }
+    }
+
+    const request = https.request(options , (response) => {
+        let data = '';
+        response.on('data' , (chunk) => {
+            data += chunk;
+        })
+
+        response.on('end' , () => {
+            if(response.statusCode === 200){
+                res.json(JSON.parse(data));
+            }else{
+                res.status(response.statusCode).json({error: 'User not found'})
+            }
+        })
+    })
+
+    request.on('error' , (error) => {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    })
+    request.end();
 })
 
 
-app.listen(process.env.PORT , () => {
-    console.log(`Server is Running @ http://localhost:${process.env.PORT} `);
-})
 
-
-
-
-
-
-// import https from 'https'
-
-// const options = {
-//     hostname : 'api.github.com',
-//     path : '/users/Gaurav-Hero/events',
-//     method : 'GET',
-//     headers : {
-//         'User-Agent' : 'Node.js'
-//     }
-// }
-
-// let data = '';
-
-// const req = https.request(options ,(res) => {
-    
-//     res.on('data' , (chunks) => {
-//         data += chunks;
-//     })
-
-//     res.on('end' , () => {
-//         data = JSON.parse(data);
-        
-//         displayRepos(data)
-//         // console.log('data Received Successfully : ', data[0].repo.name)
-//     })
-
-// })
-
-// req.on('error' , (err) => {
-//     console.error("Some error found -> ", err);
-// })
-
-// req.end()
-
-
-// const displayRepos = (data) => {
-//     let commits = 0;
-//     data.map((obj, index) => {
-//         if(obj.type === 'PushEvent')
-//         // console.log(`Repo ${index + 1}: ${obj.type}`);
-//         // console.log(`Repo ${index + 1}: ${obj.repo.name}`);
-//         // try{
-//         //     console.log(`Repo ${index + 1}: ${obj.payload.commits.map((msg) =>  msg.message )}`);
-//         // }catch(error){
-//         //     console.log('\n');
-//         // }
-//         // console.log(`------------------------------------------------`);
-//     });
-// };
-
-
-
-// const headers = {
-//     'Content-Type' : 'applicatiion/json' ,
-//     'Content-Length' : Data.length
-// }
-
-// const getUserName = (username) => {
-
-// }
-// const username = process.argv[2];
-
-// getUserName(username);
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
